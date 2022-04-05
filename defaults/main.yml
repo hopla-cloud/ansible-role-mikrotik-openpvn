@@ -1,2 +1,15 @@
 ---
 # defaults file for hoplacloud.mikrotik-openpvn
+country: FR
+state: RH
+locality: Lyon
+days-valid: 3650
+name: openvpn 
+remote-address: openvpn 
+use-compression: no
+use-encryption: yes
+use-ipv6: no
+use-mpls: no
+auth: sha1
+cipher: aes256
+default-profile: openvpn

@@ -1,2 +1,29 @@
 ---
 # tasks file for hoplacloud.mikrotik-openpvn
+- name: Génération et export du certificate authority
+  community.routeros.command:
+    commands: 
+          - /certificate add name=ca-template common-name={{ ippubopenstack }} country=FR state=RH locality=LYON days-valid=3650 key-usage=key-cert-sign,crl-sign
+          - /certificate sign ca-template ca-crl-host={{ ip_chr }} name="{{ id_client}}_CA"
+          - /certificate set "{{ id_client}}_CA" trusted=yes
+          - /certificate export-certificate "{{ id_client}}_CA"
+
+- name: Création du certificat serveur
+  community.routeros.command:
+    commands: 
+          - /certificate add name="{{ id_client}}_server-template" common-name={{ ippubopenstack }} days-valid=3650
+          - /certificate sign server-template ca="{{ id_client}}_CA" name={{ ippubopenstack }}
+          - /certificate set server trusted=yes
+
+- name: Range et règle de firewall
+  community.routeros.command:
+    commands:
+      - /ip pool add name=openvpn ranges={{ ip_range }}
+      - /ip firewall nat add action=masquerade chain=srcnat out-interface=ether2 src-address={{ ip_subnet }}
+      - /ip firewall nat add action=masquerade chain=srcnat out-interface=ether3 src-address={{ ip_subnet }}
+
+- name: Run multiple commands and evaluate the output
+  community.routeros.command:
+    commands:
+      - /ppp profile add local-address={{ vpn_gw }} name=openvpn remote-address=openvpn use-compression=no use-encryption=yes use-ipv6=no use-mpls=no
+      - /interface ovpn-server server set auth=sha1 cipher=aes256 default-profile=openvpn require-client-certificate=yes enabled=yes certificate={{ ippubopenstack }}
