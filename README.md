@@ -1,7 +1,6 @@
-Role Name
+Mikrotik Openpvn
 =========
-
-A brief description of the role goes here.
+Déploiement d'un serveur OpenVpn sur Mikrotik.
 
 Requirements
 ------------
