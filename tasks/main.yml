@@ -6,28 +6,28 @@
 
 - name: Génération et export du certificate authority
   routeros_command:
-    commands: 
+    commands:
          - /certificate add name=ca-template common-name={{ ippubopenstack }} country={{ country }} state={{ state }} locality={{ locality }} days-valid={{ days_valid }} key-usage=key-cert-sign,crl-sign
          - /certificate sign ca-template ca-crl-host={{ ip_chr }} name="{{ id_client}}_CA"
          - /certificate set "{{ id_client}}_CA" trusted=yes
          - /certificate export-certificate "{{ id_client}}_CA"
-    when: certificates.stdout == 0
+    when: certificates.stdout == "0"
 
-- name: Création du certificat serveur
-  routeros_command:
-    commands: 
-         - /certificate add name="{{ id_client}}_server-template" common-name={{ ippubopenstack }} days-valid={{ days_valid }}
-         - /certificate sign server-template ca="{{ id_client}}_CA" name={{ ippubopenstack }}
-         - /certificate set server trusted=yes
-- name: Création du certificat serveur
-  community.routeros.command:
-    commands: 
-          - /certificate add name="{{ id_client}}_server-template" common-name={{ ippubopenstack }} days-valid={{ days_valid }}
-          - /certificate sign server-template ca="{{ id_client}}_CA" name={{ ippubopenstack }}
-          - /certificate set server trusted=yes
+#- name: Création du certificat serveur
+#  routeros_command:
+#    commands:
+#         - /certificate add name="{{ id_client}}_server-template" common-name={{ ippubopenstack }} days-valid={{ days_valid }}
+#         - /certificate sign server-template ca="{{ id_client}}_CA" name={{ ippubopenstack }}
+#         - /certificate set server trusted=yes
+#- name: Création du certificat serveur
+#  community.routeros.command:
+#    commands:
+#          - /certificate add name="{{ id_client}}_server-template" common-name={{ ippubopenstack }} days-valid={{ days_valid }}
+#          - /certificate sign server-template ca="{{ id_client}}_CA" name={{ ippubopenstack }}
+#          - /certificate set server trusted=yes
 
-- name: Range et règle de firewall
- community.routeros.command:
+#- name: Range et règle de firewall
+# community.routeros.command:
             #commands:
             #- /ip pool add name=openvpn ranges={{ ip_range }}
             #- /ip firewall nat add action=masquerade chain=srcnat out-interface=ether2 src-address={{ ip_subnet }}
