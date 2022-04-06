@@ -1,7 +1,7 @@
 - name: Vérification de la présence d'un certificat
   routeros_command:
     commands:
-          - /certificate print value-list #count-only where name="h9999_CA"
+          - /certificate print count-only where name="h9999_CA"
   register: certificates
 
 - name: Génération et export du certificate authority
@@ -13,19 +13,24 @@
          - /certificate export-certificate "{{ id_client}}_CA"
   when: certificates.stdout == "0"
 
-#- name: Création du certificat serveur
-#  routeros_command:
-#    commands:
-#         - /certificate add name="{{ id_client}}_server-template" common-name={{ ippubopenstack }} days-valid={{ days_valid }}
-#         - /certificate sign server-template ca="{{ id_client}}_CA" name={{ ippubopenstack }}
-#         - /certificate set server trusted=yes
-#- name: Création du certificat serveur
-#  community.routeros.command:
-#    commands:
-#          - /certificate add name="{{ id_client}}_server-template" common-name={{ ippubopenstack }} days-valid={{ days_valid }}
-#          - /certificate sign server-template ca="{{ id_client}}_CA" name={{ ippubopenstack }}
-#          - /certificate set server trusted=yes
+- name: Vérification de la singature du certificat
+  routeros_command:
+    commands:
+          - /certificate print count-only where name="ca-template"
+  register: certificates
 
+- name: Example using fail and when together
+  fail:
+    msg: The system may not be provisioned according to the CMDB status.
+  when: certificates.stdout == "0"
+
+- name: Création du certificat serveur
+  community.routeros.command:
+    commands:
+          - /certificate add name="{{ id_client}}_server-template" common-name={{ ippubopenstack }} days-valid={{ days_valid }}
+          - /certificate sign "{{ id_client}}_server-template" ca="{{ id_client}}_CA" name={{ ippubopenstack }}
+          - /certificate set server trusted=yes
+  when: certificates.stdout == "1"
 #- name: Range et règle de firewall
 # community.routeros.command:
             #commands:
