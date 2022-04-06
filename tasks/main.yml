@@ -12,8 +12,6 @@
          - /certificate set "{{ id_client }}_CA" trusted=yes
          - /certificate export-certificate "{{ id_client }}_CA"
   when: certificates is search("0")
-  set_fact:
-    ca_generated: "yes"
 
 - name: Vérification que la template CA n'est plus la
   routeros_command:
@@ -26,13 +24,12 @@
     msg: Template ca-template toujours présente sur le router, vérifier avec WinBox et supprimer TOUS les certificats sur le routeur.
   when: certificates is search("1")
 
-- name: Création du certificat serveur et signature avec le CA si CA généré précédemment
+- name: Création du certificat serveur et signature avec le CA
   community.routeros.command:
     commands:
           - /certificate add name="{{ id_client }}_server-template" common-name={{ ippubopenstack }} days-valid={{ days_valid }}
           - /certificate sign "{{ id_client }}_server-template" ca="{{ id_client }}_CA" name={{ ippubopenstack }}
           - /certificate set server trusted=yes
-  when: ca_generated == "yes"
 #- name: Range et règle de firewall
 # community.routeros.command:
             #commands:
