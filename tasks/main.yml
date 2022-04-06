@@ -11,7 +11,7 @@
          - /certificate sign ca-template ca-crl-host={{ ip_chr }} name="{{ id_client}}_CA"
          - /certificate set "{{ id_client}}_CA" trusted=yes
          - /certificate export-certificate "{{ id_client}}_CA"
-  when: certificates.stdout.find('0')
+  when: certificates.stdout.find('0') != -1
 
 - name: Vérification de la singature du certificat
   routeros_command:
@@ -22,7 +22,7 @@
 - name: Example using fail and when together
   fail:
     msg: The system may not be provisioned according to the CMDB status.
-  when: certificates.stdout.find('0')
+  when: certificates.stdout.find('0') != -1
 
 - name: Création du certificat serveur
   community.routeros.command:
@@ -30,7 +30,7 @@
           - /certificate add name="{{ id_client}}_server-template" common-name={{ ippubopenstack }} days-valid={{ days_valid }}
           - /certificate sign "{{ id_client}}_server-template" ca="{{ id_client}}_CA" name={{ ippubopenstack }}
           - /certificate set server trusted=yes
-  when: certificates.stdout.find('1')
+  when: certificates.stdout.find('1') != -1
 #- name: Range et règle de firewall
 # community.routeros.command:
             #commands:
