@@ -27,9 +27,9 @@
 - name: Création du certificat serveur et signature avec le CA
   community.routeros.command:
     commands:
-          - /certificate add name="{{ id_client }}_server-template" common-name={{ ippubopenstack }} days-valid={{ days_valid }}
-          - /certificate sign "{{ id_client }}_server-template" ca="{{ id_client }}_CA" name={{ ippubopenstack }}
-          - /certificate set server trusted=yes
+          - /certificate add name="{{ id_client }}_server-template" common-name="{{ id_client }}_certificate" days-valid={{ days_valid }}
+          - /certificate sign "{{ id_client }}_server-template" ca="{{ id_client }}_CA" name="{{ id_client }}_certificate"
+          - /certificate set "{{ id_client }}_certificate" trusted=yes
 #- name: Range et règle de firewall
 # community.routeros.command:
             #commands:
