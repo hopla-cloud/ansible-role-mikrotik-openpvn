@@ -11,7 +11,7 @@
          - /certificate sign ca-template ca-crl-host={{ ip_chr }} name="{{ id_client}}_CA"
          - /certificate set "{{ id_client}}_CA" trusted=yes
          - /certificate export-certificate "{{ id_client}}_CA"
-    when: certificates.stdout == "0"
+  when: certificates.stdout == "0"
 
 #- name: Création du certificat serveur
 #  routeros_command:
