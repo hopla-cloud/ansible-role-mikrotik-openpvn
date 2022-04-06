@@ -43,7 +43,7 @@
   when: certificates is search("0")
 
 - name: Range et règle de firewall
- community.routeros.command:
+  community.routeros.command:
             commands:
             - /ip pool add name=openvpn ranges={{ ip_range }}
             - /ip firewall nat add action=masquerade chain=srcnat out-interface=ether2 src-address={{ ip_subnet }}
