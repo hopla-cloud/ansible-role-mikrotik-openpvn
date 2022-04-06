@@ -1,19 +1,21 @@
-- name: Vérification de la présence d'un certificat
+- name: Vérification de la présence d'une CA
   routeros_command:
     commands:
           - /certificate print count-only where name="h9999_CA"
   register: certificates
 
-- name: Génération et export du certificate authority
+- name: Génération et export du CA
   routeros_command:
     commands:
          - /certificate add name=ca-template common-name={{ ippubopenstack }} country={{ country }} state={{ state }} locality={{ locality }} days-valid={{ days_valid }} key-usage=key-cert-sign,crl-sign
-         - /certificate sign ca-template ca-crl-host={{ ip_chr }} name="{{ id_client}}_CA"
-         - /certificate set "{{ id_client}}_CA" trusted=yes
-         - /certificate export-certificate "{{ id_client}}_CA"
+         - /certificate sign ca-template ca-crl-host={{ ip_chr }} name="{{ id_client }}_CA"
+         - /certificate set "{{ id_client }}_CA" trusted=yes
+         - /certificate export-certificate "{{ id_client }}_CA"
   when: certificates is search("0")
+  set_fact:
+    ca_generated: "yes"
 
-- name: Vérification que la template n'est plus la
+- name: Vérification que la template CA n'est plus la
   routeros_command:
     commands:
           - /certificate print count-only where name="ca-template"
@@ -21,16 +23,16 @@
 
 - name: Arrêt du job si la template est toujours présente
   fail:
-    msg: Template ca-template toujours présente sur le router, vérifier avec WinBox
+    msg: Template ca-template toujours présente sur le router, vérifier avec WinBox et supprimer TOUS les certificats sur le routeur.
   when: certificates is search("1")
 
-#- name: Création du certificat serveur
-#  community.routeros.command:
-#    commands:
-#          - /certificate add name="{{ id_client}}_server-template" common-name={{ ippubopenstack }} days-valid={{ days_valid }}
-#          - /certificate sign "{{ id_client}}_server-template" ca="{{ id_client}}_CA" name={{ ippubopenstack }}
-#          - /certificate set server trusted=yes
-#  when: certificates is search("1")
+- name: Création du certificat serveur et signature avec le CA si CA généré précédemment
+  community.routeros.command:
+    commands:
+          - /certificate add name="{{ id_client }}_server-template" common-name={{ ippubopenstack }} days-valid={{ days_valid }}
+          - /certificate sign "{{ id_client }}_server-template" ca="{{ id_client }}_CA" name={{ ippubopenstack }}
+          - /certificate set server trusted=yes
+  when: ca_generated == "yes"
 #- name: Range et règle de firewall
 # community.routeros.command:
             #commands:
