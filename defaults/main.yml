@@ -4,8 +4,8 @@ country: FR
 state: RH
 locality: Lyon
 days_valid: 3650
-name: openvpn 
-remote_address: openvpn 
+interface_name: openvpn
+remote_address: openvpn
 use_compression: no
 use_encryption: yes
 use_ipv6: no
