@@ -1,7 +1,7 @@
 - name: Vérification de la présence d'un certificat
   routeros_command:
     commands:
-          - /certificate print count-only where name="h9999_CA"
+          - /certificate print value-list #count-only where name="h9999_CA"
   register: certificates
 
 - name: Génération et export du certificate authority
