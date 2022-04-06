@@ -30,15 +30,27 @@
           - /certificate add name="{{ id_client }}_server-template" common-name="{{ id_client }}_certificate" days-valid={{ days_valid }}
           - /certificate sign "{{ id_client }}_server-template" ca="{{ id_client }}_CA" name="{{ id_client }}_certificate"
           - /certificate set "{{ id_client }}_certificate" trusted=yes
-#- name: Range et règle de firewall
-# community.routeros.command:
-            #commands:
-            #- /ip pool add name=openvpn ranges={{ ip_range }}
-            #- /ip firewall nat add action=masquerade chain=srcnat out-interface=ether2 src-address={{ ip_subnet }}
-            #- /ip firewall nat add action=masquerade chain=srcnat out-interface=ether3 src-address={{ ip_subnet }}
 
-            #- name: Run multiple commands and evaluate the output
-            #community.routeros.command:
-            #commands:
-            #- /ppp profile add local-address={{ vpn_gw }} name={{ name }} remote-address={{ remote_address }} use-compression={{ use_compression }} use-encryption={{ use_encryption }} use-ipv6={{ use_ipv6 }} use-mpls={{ use_mpls }}
-            #- /interface ovpn-server server set auth=sha1 cipher=aes256 default_profile=openvpn require-client-certificate=yes enabled=yes certificate={{ ippubopenstack }}
+- name: Vérification que le certificat est signé par la CA
+  routeros_command:
+    commands:
+          - /certificate print count-only where ca="{{ id_client }}_CA"
+  register: certificates
+
+- name: Arrêt du job si le certificat n'est pas signé
+  fail:
+    msg: Certificat non signé par la CA, vérifier sur WinBox.
+  when: certificates is search("0")
+
+- name: Range et règle de firewall
+ community.routeros.command:
+            commands:
+            - /ip pool add name=openvpn ranges={{ ip_range }}
+            - /ip firewall nat add action=masquerade chain=srcnat out-interface=ether2 src-address={{ ip_subnet }}
+            - /ip firewall nat add action=masquerade chain=srcnat out-interface=ether3 src-address={{ ip_subnet }}
+
+- name: Run multiple commands and evaluate the output
+  community.routeros.command:
+    commands:
+          - /ppp profile add local-address={{ vpn_gw }} name={{ interface_name }} remote-address={{ remote_address }} use-compression={{ use_compression }} use-encryption={{ use_encryption }} use-ipv6={{ use_ipv6 }} use-mpls={{ use_mpls }}
+          - /interface ovpn-server server set auth=sha1 cipher=aes256 default_profile=openvpn require-client-certificate=yes enabled=yes certificate={{ ippubopenstack }}
