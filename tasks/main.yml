@@ -42,15 +42,38 @@
     msg: Certificat non signé par la CA, vérifier sur WinBox.
   when: certificates is search("0")
 
-- name: Range et règle de firewall
+- name: Range openvpn
   community.routeros.command:
-            commands:
-            - /ip pool add name=openvpn ranges={{ ip_range }}
-            - /ip firewall nat add action=masquerade chain=srcnat out-interface=ether2 src-address={{ ip_subnet }}
-            - /ip firewall nat add action=masquerade chain=srcnat out-interface=ether3 src-address={{ ip_subnet }}
+    commands:
+          - /ip pool add name=openvpn ranges={{ subnet }}
 
-- name: Run multiple commands and evaluate the output
+- name: Vérification du nombre d interfaces
+  routeros_command:
+    commands:
+          - /interface print count-only
+  register: interfaces
+
+- name: Vérification que les règles de pare-feu ne sont pas deja faites.
+  routeros_command:
+    commands:
+          - /ip firewall nat print count-only where src-address={{ subnet }} and action=masquerade
+  register: fw_rules
+
+- name: Règles de FW
+  community.routeros.command:
+    commands:
+          - /ip firewall nat add action=masquerade chain=srcnat out-interface=ether2 src-address={{ subnet }}
+          - /ip firewall nat add action=masquerade chain=srcnat out-interface=ether3 src-address={{ subnet }}
+  when: fw_rules is search("0") and interfaces is search("3")
+
+- name: Règles de FW
+  community.routeros.command:
+    commands:
+          - /ip firewall nat add action=masquerade chain=srcnat out-interface=ether2 src-address={{ subnet }}
+  when: fw_rules is search("0") and interfaces is search("2")
+
+- name: Add openvpn interface and enabling server
   community.routeros.command:
     commands:
           - /ppp profile add local-address={{ vpn_gw }} name={{ interface_name }} remote-address={{ remote_address }} use-compression={{ use_compression }} use-encryption={{ use_encryption }} use-ipv6={{ use_ipv6 }} use-mpls={{ use_mpls }}
-          - /interface ovpn-server server set auth=sha1 cipher=aes256 default_profile=openvpn require-client-certificate=yes enabled=yes certificate={{ ippubopenstack }}
+          - /interface ovpn-server server set auth=sha1 cipher=aes256 default-profile=openvpn require-client-certificate=yes enabled=yes certificate={{ ippubopenstack }}

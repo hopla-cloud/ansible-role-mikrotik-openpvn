@@ -13,3 +13,4 @@ use_mpls: no
 auth: sha1
 cipher: aes256
 default_profile: openvpn
+subnet: "192.168.0.0/27"
