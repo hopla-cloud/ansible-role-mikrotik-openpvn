@@ -42,10 +42,17 @@
     msg: Certificat non signé par la CA, vérifier sur WinBox.
   when: certificates is search("0")
 
+- name: Vérification qu'aucun pool openvpn est présent.
+  routeros_command:
+    commands:
+          - /ip pool print count-only where name=openvpn
+  register: pool
+
 - name: Range openvpn
   community.routeros.command:
     commands:
           - /ip pool add name=openvpn ranges={{ subnet }}
+  when: pool is search("0")
 
 - name: Vérification du nombre d interfaces
   routeros_command:
@@ -76,4 +83,4 @@
   community.routeros.command:
     commands:
           - /ppp profile add local-address={{ vpn_gw }} name={{ interface_name }} remote-address={{ remote_address }} use-compression={{ use_compression }} use-encryption={{ use_encryption }} use-ipv6={{ use_ipv6 }} use-mpls={{ use_mpls }}
-          - /interface ovpn-server server set auth=sha1 cipher=aes256 default-profile=openvpn require-client-certificate=yes enabled=yes certificate={{ ippubopenstack }}
+          - /interface ovpn-server server set auth=sha1 cipher=aes256 default-profile=openvpn require-client-certificate=yes enabled=yes certificate="{{ id_client }}_certificate"
