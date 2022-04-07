@@ -24,11 +24,19 @@
     msg: Template ca-template toujours présente sur le router, vérifier avec WinBox et supprimer TOUS les certificats sur le routeur.
   when: certificates is search("1")
 
-- name: Création du certificat serveur et signature avec le CA
+- name: Création du certificat serveur et signature avec le CA 1
   community.routeros.command:
     commands:
           - /certificate add name="{{ id_client }}_server-template" common-name="{{ id_client }}_certificate" days-valid={{ days_valid }}
+
+- name: Création du certificat serveur et signature avec le CA 2
+  community.routeros.command:
+    commands:
           - /certificate sign "{{ id_client }}_server-template" ca="{{ id_client }}_CA" name="{{ id_client }}_certificate"
+
+- name: Création du certificat serveur et signature avec le CA 3
+  community.routeros.command:
+    commands:
           - /certificate set "{{ id_client }}_certificate" trusted=yes
 
 - name: Vérification que le certificat est signé par la CA
